@@ -15,7 +15,7 @@ class TaskCell: UITableViewCell {
     func configure(with task: Task) {
         titleLabel.text = task.title
         titleLabel.textColor = task.isComplete ? .secondaryLabel : .label
-        completedImageView.image = UIImage(systemName: task.isComplete ? "circle.inset.filled" : "circle")?.withRenderingMode(.alwaysTemplate)
+        completedImageView.image = UIImage(systemName: task.isComplete ? "inset.filled.circle" : "circle")?.withRenderingMode(.alwaysTemplate)
         completedImageView.tintColor = task.isComplete ? .systemBlue : .tertiaryLabel
     }
 

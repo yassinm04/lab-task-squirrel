@@ -73,7 +73,7 @@ class TaskDetailViewController: UIViewController, MKMapViewDelegate {
         titleLabel.text = task.title
         descriptionLabel.text = task.description
 
-        let completedImage = UIImage(systemName: task.isComplete ? "circle.inset.filled" : "circle")
+        let completedImage = UIImage(systemName: task.isComplete ? "inset.filled.circle" : "circle")
 
         // calling `withRenderingMode(.alwaysTemplate)` on an image allows for coloring the image via it's `tintColor` property.
         completedImageView.image = completedImage?.withRenderingMode(.alwaysTemplate)

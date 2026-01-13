@@ -28,5 +28,16 @@ class PhotoViewController: UIViewController {
         // Set the image from the task (if available)
         photoView.image = task?.image
         view.backgroundColor = .systemBackground
+
+        // If this controller is presented modally (either directly or wrapped in a UINavigationController),
+        // add a Done button so it can be dismissed. We check `presentingViewController` and the nav wrapper.
+        let isPresentedModally = presentingViewController != nil || navigationController?.presentingViewController != nil
+        if isPresentedModally {
+            navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(didTapDone))
+        }
+    }
+
+    @objc func didTapDone() {
+        dismiss(animated: true, completion: nil)
     }
 }
