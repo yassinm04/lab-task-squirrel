@@ -42,7 +42,18 @@ class TaskAnnotationView: MKAnnotationView {
 
     // Use this method to pass in and set the image for the annotation.
     func configure(with image: UIImage?) {
-        imageView.image = image ?? UIImage(systemName: "pin.fill")
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            // If no image provided, fall back to a system pin icon
+            if let img = image {
+                self.imageView.image = img
+            } else {
+                self.imageView.image = UIImage(systemName: "pin.fill")
+            }
+            // Ensure layout updates occur (important when configuring after reuse)
+            self.setNeedsLayout()
+            self.layoutIfNeeded()
+        }
     }
 
     // Internal funtion to do initial view setup

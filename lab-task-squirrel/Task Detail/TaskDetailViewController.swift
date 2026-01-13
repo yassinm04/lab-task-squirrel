@@ -208,19 +208,35 @@ class TaskDetailViewController: UIViewController, MKMapViewDelegate {
     }
 
     @objc private func didTapViewPhoto(_ sender: Any) {
-        // Prefer storyboard segue if configured; otherwise push/present PhotoViewController programmatically.
-        if let _ = storyboard?.instantiateViewController(withIdentifier: "PhotoViewController") as? PhotoViewController {
-            // If the storyboard scene is wired, perform the segue (prepare(for:) will pass the task).
-            if let _ = storyboard?.value(forKey: "instantiateInitialViewController") { /* noop */ }
+        // Defensive: ensure we have a task and an image to show
+        guard let task = task else {
+            print("[TaskDetail] didTapViewPhoto called but task is nil")
+            showAlert(for: nil)
+            return
         }
 
-        // Programmatic fallback: create and push/present PhotoViewController
+        guard task.image != nil else {
+            print("[TaskDetail] didTapViewPhoto called but no image is attached to task")
+            let alert = UIAlertController(title: "No Photo", message: "There is no photo attached to this task yet.", preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+            present(alert, animated: true, completion: nil)
+            return
+        }
+
+        // Always create PhotoViewController programmatically. The PhotoViewController
+        // handles the case where its `photoView` outlet isn't connected by creating
+        // its image view at runtime, so this approach is safe even if the storyboard
+        // scene or identifier isn't set.
         let photoVC = PhotoViewController()
         photoVC.task = task
-        if let nav = self.navigationController {
+
+        print("[TaskDetail] Presenting PhotoViewController (pushed if nav exists, else modal)")
+        if let nav = navigationController {
             nav.pushViewController(photoVC, animated: true)
         } else {
-            present(photoVC, animated: true)
+            let nav = UINavigationController(rootViewController: photoVC)
+            nav.modalPresentationStyle = .fullScreen
+            present(nav, animated: true, completion: nil)
         }
     }
 
@@ -231,6 +247,24 @@ class TaskDetailViewController: UIViewController, MKMapViewDelegate {
                 photoVC.task = task
             }
         }
+    }
+
+    // Implement MKMapViewDelegate in an extension. The class conforms above.
+    func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
+        // Use default view for user location
+        if annotation is MKUserLocation { return nil }
+
+        // Only handle our point annotations
+        guard annotation is MKPointAnnotation else { return nil }
+
+        // Dequeue a TaskAnnotationView. We registered the class in viewDidLoad().
+        let identifier = TaskAnnotationView.identifier
+        let annotationView = mapView.dequeueReusableAnnotationView(withIdentifier: identifier, for: annotation) as? TaskAnnotationView
+
+        // Configure the annotation view with the task image (TaskAnnotationView falls back to a default pin if nil).
+        annotationView?.configure(with: task.image)
+        annotationView?.canShowCallout = true
+        return annotationView
     }
 }
 
